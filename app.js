@@ -10,6 +10,7 @@ app.use(bodyParser.json());
 
 const appRoutes = require('./routes/app');
 const usuarioRoutes = require('./routes/usuario');
+const loginRoutes = require('./routes/login');
 
 mongoose.connect('mongodb://localhost:27017/hospitalDB', {useNewUrlParser: true, useUnifiedTopology: true}, (err, res) => {
   if(err) throw err;
@@ -19,6 +20,7 @@ mongoose.connect('mongodb://localhost:27017/hospitalDB', {useNewUrlParser: true,
 
 
 app.use('/usuario', usuarioRoutes);
+app.use('/login', loginRoutes);
 app.use('/', appRoutes);
 
 app.listen(3000, () => {

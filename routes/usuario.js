@@ -1,6 +1,10 @@
 const express = require('express');
-const app = express();
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+const mdAutenticacion = require('../middlewares/autenticacion');
+
+const app = express();
 
 const Usuario = require('../models/usuario');
 
@@ -31,10 +35,12 @@ app.get('/', (req, res, next) => {
 
 });
 
+
+
 /*====================================================
   Actualizar usuario
 ====================================================*/
-app.put('/:id', (req, res) => {
+app.put('/:id', mdAutenticacion.verificaToken, (req, res) => {
 
   const id = req.params.id;
   const body = req.body;
@@ -89,7 +95,7 @@ app.put('/:id', (req, res) => {
 /*====================================================
   Crear um nuevo usuario
 ====================================================*/
-app.post('/', (req, res, next) => {
+app.post('/', mdAutenticacion.verificaToken, (req, res, next) => {
 
   const body = req.body;
 
@@ -114,10 +120,45 @@ app.post('/', (req, res, next) => {
     res.status(201).json({
       ok: true,
       usuario: usuarioGuardado,
+      usuarioToken: req.usuario,
     });
 
   });
 
+});
+
+/*====================================================
+  Borrar un usuario por el id
+====================================================*/
+app.delete('/:id', mdAutenticacion.verificaToken, (req, res) => {
+
+  const id = req.params.id;
+
+  Usuario.findByIdAndRemove(id, (err, usuarioBorrado) => {
+
+    if(err) {
+      return res.status(500).json({
+        ok: false,
+        mensaje: 'Error al borrar usuario',
+        errors: err,
+      });
+    }
+
+    if(!usuarioBorrado) {
+      return res.status(400).json({
+        ok: false,
+        mensaje: `El usuario con el id ${id} no existe`,
+        errors: {
+          message: 'No existe un usuario con este id',
+        }
+      });
+    }
+
+    res.status(200).json({
+      ok: true,
+      usuario: usuarioBorrado,
+    });
+  });
 });
 
 module.exports = app;
